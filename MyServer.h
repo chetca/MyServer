@@ -17,9 +17,11 @@ public slots:
     void slotNewConnection(); //слот нового соединения
     void slotServerRead(); //слот для чтения данных с сокета
     void slotClientDisconnected(); //слот для приёма сигнала об отключении
-
+public:
+    QVector<QTcpSocket*> *clients;
 private:
     QTcpServer * mTcpServer;
     QTcpSocket * mTcpSocket;
+
 };
 #endif // MYSERVER_H

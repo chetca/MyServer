@@ -5,41 +5,50 @@
 #include <QDebug>
 #include <QByteArray>
 #include <QDataStream>
+#include <iostream>
 #include "MyServer.h"
 
 MyServer::MyServer(QObject *parent) : QObject(parent) {
     mTcpServer = new QTcpServer(this); //инициализация сервера
+    clients = new QVector<QTcpSocket*>();
     connect(mTcpServer, &QTcpServer::newConnection, this, &MyServer::slotNewConnection); //подключение сервера к слоту
-    //mTcpServer->connectToHost("localhost", 6666);
 
     //мы слушаем весь диапазон IP-адресов на данном порту методом 'listen()'
-    if(!mTcpServer->listen(QHostAddress::Any, 6666)){ //привязываем сервер к порту и айпишнику
-        qDebug() << "server is not started";
+    if(mTcpServer->listen(QHostAddress::Any, 6666)){ //привязываем сервер к порту и айпишнику
+        qDebug() << "Server is started! =)";
     } else {
-        qDebug() << "server is started";
+        qDebug() << "Server is not started! =(";
     }
 }
 
 void MyServer::slotNewConnection() { //как только приходит сигнал, вызывается слот "NewConnection"
 
-    mTcpSocket = mTcpServer->nextPendingConnection(); //возвращаем сокет
-    mTcpSocket->write("Hello, World!!! I am a server!\r\n");//и записываем в него данные которые потом пойдут к клиенту
+    QTcpSocket *socket = mTcpServer->nextPendingConnection(); //возвращаем сокет
+    socket->write("Hello, World!!! I am a server!\r\n");//и записываем в него данные которые потом пойдут к клиенту
 
-    connect(mTcpSocket, &QTcpSocket::readyRead, this, &MyServer::slotServerRead); //связываем сигналы со слотами
-    connect(mTcpSocket, &QTcpSocket::disconnected, this, &MyServer::slotClientDisconnected);
+    clients->push_back(socket);
+    connect(socket, &QTcpSocket::readyRead, this, &MyServer::slotServerRead); //связываем сигналы со слотами
+    connect(socket, &QTcpSocket::disconnected, this, &MyServer::slotClientDisconnected);
 
     //опционально для бинарки
-    //mTcpSocket->write("Enter the number, and I'll tell you if it is a binary: \r\n");
+    socket->write("Enter the number, and I'll tell you if it is a binary: \r\n");
 }
 
 //фактически эта функция - заглушка, нужная что бы показать что сервер работает.
 //Сейчас он принимает данные от клиента, пишет их в массив и отправляет их обратно
 void MyServer::slotServerRead() {
-    while(mTcpSocket->bytesAvailable()>0) { //Работаем пока идут данные от клиента
-        QString str = mTcpSocket->readAll(); //Получаем данные от клиента
-        QByteArray array; //заводим строку
-        array.append(str);//записываем данные в строку
-        mTcpSocket->write(array); //отправляем их клиенту
+    while(true) {   //Работаем пока идут данные от клиента
+
+        for (auto x = clients->begin(); x != clients->end(); ++x){
+            if ((*x)->bytesAvailable() > 0)
+            QString str = (*x)->readAll();    //Получаем данные от клиента
+
+            //cout << "Output: " << ;
+            for (auto y = clients->begin(); y != clients->end(); ++y){
+                QString _tmp = str;
+                if (y != x) (*y)->write(_tmp.toUtf8());        //отправляем их клиенту
+            }
+        }
     }
 }
 
