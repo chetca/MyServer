@@ -13,17 +13,17 @@
   >> - Сервер - Клиенту.
 
 Начало сессии:
-  << X0client:<Version>:<ClientName>:<VersionOS>:<NickName>:<Password>: // Начало сессии
+  << X0client:<Version>:<ClientName>:<VersionOS>:<NickName>:<Password>:    // Начало сессии
   >> X0server:<Version>:[<StatusReg>:]					   // Ответ сервера, версия сервера (и статус регистрации: 0 - игрок не найден, 1 - игрок прошел авторизацию)
 Регистрация нового игрока:
   << X0client:NewReg:<login>:<password>:				   // Регистрация нового игрока
-  >> X0server:NewReg:<StatusReg>:						   // 0 - Ошибка, логин уже занят, 1 - успешная регистрация
+  >> X0server:NewReg:<StatusReg>:						       // 0 - Ошибка, логин уже занят, 1 - успешная регистрация
 Игровая партия:
-  << X0client:start:                                       // Готов к игре
-  >> X0server:find:                                        // Поиск соперника
-  >> X0server:OK:                                          // Игрок-соперник найден
-  >> X0server:step:										   // Посылается ходящему игроку
-  << X0client:step:<0-2>:<0-2>:                            // Ход
-      >> X0server:step:OK:<GameBoard>:<GameStatus>:           // Ход успешен. GameStatus: 0 - игра еще идет, 1 - ничья, 2 - fail, 3 - win
-      >> X0server:step:ERROR:<CodeError>:                     // Ошибка. CodeError: 0 - клетка занята, 1 - неверные координаты
+  << X0client:start:                               // Готов к игре
+  >> X0server:find:                                // Поиск соперника
+  >> X0server:OK:                                  // Игрок-соперник найден
+  >> X0server:step:										             // Посылается ходящему игроку
+  << X0client:step:<0-2>:<0-2>:                    // Ход
+      >> X0server:step:OK:<GameBoard>:<GameStatus>:    // Ход успешен. GameStatus: 0 - игра еще идет, 1 - ничья, 2 - fail, 3 - win
+      >> X0server:step:ERROR:<CodeError>:          // Ошибка. CodeError: 0 - клетка занята, 1 - неверные координаты
   disconnect
